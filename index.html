@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Canton Coin · 14-Day Average</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,6 +42,23 @@
         radial-gradient(ellipse 50% 30% at 10% 80%, rgba(244, 114, 182, 0.08), transparent);
       position: relative;
       overflow-x: hidden;
+    }
+
+    .miami-banner {
+      margin: -2rem -2rem 1.5rem -2rem;
+      padding: 0.9rem 2rem;
+      background: color-mix(in srgb, var(--surface) 90%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.95rem;
+      color: var(--text);
+      position: relative;
+      z-index: 1;
+    }
+    .miami-banner .temp {
+      font-weight: 700;
+      color: var(--accent);
     }
 
     .main {
@@ -318,19 +338,17 @@
     }
     .designer-badge .flamingo-wrap {
       display: inline-block;
-      animation: designer-strut 1.2s ease-in-out infinite;
+      animation: sun-jump 0.6s ease-in-out infinite;
     }
-    @keyframes designer-strut {
-      0%, 100% { transform: rotate(-5deg) translateY(0); }
-      25% { transform: rotate(5deg) translateY(-3px); }
-      50% { transform: rotate(-3deg) translateY(2px); }
-      75% { transform: rotate(6deg) translateY(-2px); }
+    @keyframes sun-jump {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
     .designer-badge .flamingo-wrap svg {
       width: 44px;
-      height: 55px;
+      height: 44px;
       display: block;
-      filter: drop-shadow(0 2px 6px rgba(244,114,182,0.35));
+      filter: drop-shadow(0 2px 6px rgba(234, 179, 8, 0.4));
     }
     .designer-badge .slogan {
       font-family: 'Comic Sans MS', 'Chalkboard', cursive, sans-serif;
@@ -355,6 +373,10 @@
   </style>
 </head>
 <body>
+  <div class="miami-banner" id="miami-banner">
+    Today's temperature in Miami Beach is <span class="temp" id="miami-banner-temp">…</span>. Have a wonderful day ahead! <span id="miami-banner-emoji" aria-hidden="true"></span>
+  </div>
+
   <div class="flamingos" aria-hidden="true">
     <img class="flamingo-1" src="https://images.pexels.com/photos/47726/bird-flamingo-pink-red-47726.jpeg?auto=compress&cs=tinysrgb&w=400" alt="" width="180" height="140">
     <img class="flamingo-2" src="https://images.pexels.com/photos/64002/flamingo-bird-pink-tropical-64002.jpeg?auto=compress&cs=tinysrgb&w=400" alt="" width="160" height="120">
@@ -365,15 +387,11 @@
 
   <div class="designer-badge" aria-hidden="true">
     <div class="flamingo-wrap">
-      <svg viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M40 100c-8 0-15-4-18-10l-2-6c-1-3 0-6 2-8l18-45c2-5 8-8 14-7l2 1c4 1 7 5 7 9v8c0 2-1 4-3 5L35 65c-2 2-2 5 0 7l8 20c2 4 0 8-4 8z" fill="#f472b6"/>
-        <ellipse cx="42" cy="22" rx="14" ry="18" fill="#f472b6"/>
-        <path d="M52 18c2-2 4-1 5 1 1 3-1 6-4 7-2 1-4 0-5-2-1-2 0-4 2-6z" fill="#f472b6"/>
-        <path d="M38 98v22" stroke="#e879a5" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="46" cy="18" r="2" fill="#1a0f14"/>
-        <path d="M48 16l4 2" stroke="#1a0f14" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M32 8h20l-3 6h-2l2 4H35l-3-4h-2l2-6z" fill="#e8b84a" stroke="#c49b3d" stroke-width="0.8"/>
-        <path d="M34 6l2-2 2 2M38 4l2-2 2 2M42 6l2-2 2 2" stroke="#e8b84a" stroke-width="1" fill="none" stroke-linecap="round"/>
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="24" cy="24" r="12" fill="#facc15"/>
+        <circle cx="24" cy="24" r="9" fill="#fde047"/>
+        <path d="M24 4v4M24 40v4M4 24h4M40 24h4M10 10l3 3M35 35l3 3M35 10l-3 3M10 35l-3 3" stroke="#eab308" stroke-width="2" stroke-linecap="round"/>
+        <path d="M24 8v2M24 38v2M8 24h2M38 24h2M12 12l1.5 1.5M34.5 34.5l1.5 1.5M34.5 12l-1.5 1.5M12 34.5l-1.5 1.5" stroke="#fde047" stroke-width="1.2" stroke-linecap="round"/>
       </svg>
     </div>
     <p class="slogan">
@@ -464,6 +482,36 @@
     const errorEl = document.getElementById('error');
 
     let trendChart = null;
+
+    function weatherCodeToEmoji(code) {
+      if (code == null) return '☀️';
+      const rainCodes = [51, 53, 55, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99];
+      if (rainCodes.includes(code)) return '🌧️';
+      if (code === 0 || code === 1) return '☀️';
+      if (code === 2) return '⛅';
+      return '☁️';
+    }
+
+    async function fetchMiamiBannerTemp() {
+      const tempEl = document.getElementById('miami-banner-temp');
+      const emojiEl = document.getElementById('miami-banner-emoji');
+      if (!tempEl) return;
+      try {
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=25.7907&longitude=-80.1300&current=temperature_2m,weather_code&temperature_unit=celsius');
+        const data = await res.json();
+        if (res.ok && data.current) {
+          const t = data.current.temperature_2m;
+          tempEl.textContent = t != null ? Math.round(t) + '°C' : '—';
+          if (emojiEl) emojiEl.textContent = weatherCodeToEmoji(data.current.weather_code);
+        } else {
+          tempEl.textContent = '—';
+          if (emojiEl) emojiEl.textContent = '☀️';
+        }
+      } catch (_) {
+        tempEl.textContent = '—';
+        if (emojiEl) emojiEl.textContent = '☀️';
+      }
+    }
 
     function setLoading(loading) {
       card.classList.toggle('loading', loading);
@@ -700,6 +748,7 @@
 
     document.getElementById('refresh').addEventListener('click', fetchAndDisplay);
     fetchAndDisplay();
+    fetchMiamiBannerTemp();
   </script>
 </body>
 </html>
