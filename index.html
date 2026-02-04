@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canton Coin · 14-Day Average</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <style>
+    :root {
+      --bg: #1a0f14;
+      --surface: #2d1822;
+      --border: #4a2d38;
+      --text: #fce8ef;
+      --muted: #c99bad;
+      --accent: #f472b6;
+      --accent-dim: #e879a5;
+      --success: #86efac;
+      --error: #fca5a5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(244, 114, 182, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 80% 100%, rgba(236, 72, 153, 0.1), transparent),
+        radial-gradient(ellipse 50% 30% at 10% 80%, rgba(244, 114, 182, 0.08), transparent);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .main {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      align-items: flex-start;
+      justify-content: center;
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chart-wrap {
+      width: 100%;
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+      animation: cardIn 0.6s ease-out 0.15s both;
+      min-height: 320px;
+    }
+
+    .chart-wrap h2 {
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding: 0 0.25rem;
+    }
+
+    .chart-wrap #trend-chart {
+      width: 100%;
+      height: 300px;
+    }
+
+    .flamingos {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .flamingos img {
+      position: absolute;
+      object-fit: cover;
+      border-radius: 12px;
+      opacity: 0.35;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .flamingos .flamingo-1 { left: 4%; bottom: 12%; width: 180px; height: 140px; transform: scaleX(-1) rotate(-8deg); }
+    .flamingos .flamingo-2 { right: 5%; bottom: 22%; width: 160px; height: 120px; transform: rotate(6deg); }
+    .flamingos .flamingo-3 { left: 12%; top: 18%; width: 140px; height: 100px; transform: scaleX(-1) rotate(12deg); opacity: 0.28; }
+    .flamingos .flamingo-4 { right: 10%; top: 25%; width: 170px; height: 130px; transform: rotate(-6deg); opacity: 0.3; }
+    .flamingos .flamingo-5 { left: 50%; bottom: 3%; width: 150px; height: 110px; transform: translateX(-50%) scaleX(-1); opacity: 0.25; }
+
+    .card {
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem 3rem;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+      animation: cardIn 0.6s ease-out;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    h1 {
+      font-weight: 300;
+      font-size: 1.5rem;
+      color: var(--text);
+      margin-bottom: 2rem;
+    }
+
+    .value-block {
+      margin-bottom: 1.75rem;
+    }
+
+    .value-block:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .value {
+      font-weight: 700;
+      font-size: 2.5rem;
+      color: var(--accent);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+
+    .value.sub {
+      font-size: 1.35rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.5rem 0;
+    }
+
+    .meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 1.5rem;
+    }
+
+    .loading .value,
+    .loading .value.sub {
+      color: var(--muted);
+    }
+
+    .loading .value::after {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 1.1em;
+      background: var(--muted);
+      margin-left: 2px;
+      vertical-align: text-bottom;
+      animation: blink 0.8s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .error-msg {
+      color: var(--error);
+      font-size: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .refresh {
+      margin-top: 1.75rem;
+      padding: 0.6rem 1.25rem;
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: transparent;
+      border: 1px solid var(--accent-dim);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .refresh:hover {
+      background: rgba(244, 114, 182, 0.2);
+      color: var(--accent);
+    }
+
+    .table-wrap {
+      background: color-mix(in srgb, var(--surface) 85%, transparent);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem 1.25rem;
+      min-width: 280px;
+      max-width: 420px;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.3);
+      animation: cardIn 0.6s ease-out 0.1s both;
+    }
+
+    .table-wrap h2 {
+      font-weight: 500;
+      font-size: 1rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+      padding: 0 0.25rem;
+    }
+
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .history-table th {
+      text-align: left;
+      padding: 0.5rem 0.6rem;
+      font-weight: 500;
+      color: var(--muted);
+      font-size: 0.75rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .history-table td {
+      padding: 0.5rem 0.6rem;
+      border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+    }
+
+    .history-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .history-table tr:hover td {
+      background: rgba(244, 114, 182, 0.06);
+    }
+
+    .history-table .col-date {
+      color: var(--text);
+    }
+
+    .history-table .col-avg {
+      text-align: right;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .table-loading .history-table td {
+      color: var(--muted);
+    }
+
+    .designer-badge {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      z-index: 10;
+      padding: 0.6rem 0.9rem;
+      background: color-mix(in srgb, var(--surface) 92%, transparent);
+      backdrop-filter: blur(10px);
+      border: 3px solid var(--accent);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: designer-pulse 2.5s ease-in-out infinite;
+    }
+    @keyframes designer-pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+    }
+    .designer-badge .flamingo-wrap {
+      display: inline-block;
+      animation: designer-strut 1.2s ease-in-out infinite;
+    }
+    @keyframes designer-strut {
+      0%, 100% { transform: rotate(-5deg) translateY(0); }
+      25% { transform: rotate(5deg) translateY(-3px); }
+      50% { transform: rotate(-3deg) translateY(2px); }
+      75% { transform: rotate(6deg) translateY(-2px); }
+    }
+    .designer-badge .flamingo-wrap svg {
+      width: 44px;
+      height: 55px;
+      display: block;
+      filter: drop-shadow(0 2px 6px rgba(244,114,182,0.35));
+    }
+    .designer-badge .slogan {
+      font-family: 'Comic Sans MS', 'Chalkboard', cursive, sans-serif;
+      font-size: 0.6rem;
+      font-weight: bold;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 1.35;
+      margin-top: 0.35rem;
+      animation: designer-blink 0.9s ease-in-out infinite;
+    }
+    @keyframes designer-blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.88; }
+    }
+    .designer-badge .slogan .line2 {
+      display: block;
+      font-size: 0.7rem;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="flamingos" aria-hidden="true">
+    <img class="flamingo-1" src="https://images.pexels.com/photos/47726/bird-flamingo-pink-red-47726.jpeg?auto=compress&cs=tinysrgb&w=400" alt="" width="180" height="140">
+    <img class="flamingo-2" src="https://images.pexels.com/photos/64002/flamingo-bird-pink-tropical-64002.jpeg?auto=compress&cs=tinysrgb&w=400" alt="" width="160" height="120">
+    <img class="flamingo-3" src="https://images.pexels.com/photos/36018/flamingo-phoenicopterus-flamingos-phoenicopteriformes.jpg?auto=compress&cs=tinysrgb&w=400" alt="" width="140" height="100">
+    <img class="flamingo-4" src="https://images.pexels.com/photos/441222/pexels-photo-441222.jpeg?auto=compress&cs=tinysrgb&w=400" alt="" width="170" height="130">
+    <img class="flamingo-5" src="https://images.pexels.com/photos/20255306/pexels-photo-20255306.jpeg?auto=compress&cs=tinysrgb&w=400" alt="" width="150" height="110">
+  </div>
+
+  <div class="designer-badge" aria-hidden="true">
+    <div class="flamingo-wrap">
+      <svg viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M40 100c-8 0-15-4-18-10l-2-6c-1-3 0-6 2-8l18-45c2-5 8-8 14-7l2 1c4 1 7 5 7 9v8c0 2-1 4-3 5L35 65c-2 2-2 5 0 7l8 20c2 4 0 8-4 8z" fill="#f472b6"/>
+        <ellipse cx="42" cy="22" rx="14" ry="18" fill="#f472b6"/>
+        <path d="M52 18c2-2 4-1 5 1 1 3-1 6-4 7-2 1-4 0-5-2-1-2 0-4 2-6z" fill="#f472b6"/>
+        <path d="M38 98v22" stroke="#e879a5" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="46" cy="18" r="2" fill="#1a0f14"/>
+        <path d="M48 16l4 2" stroke="#1a0f14" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M32 8h20l-3 6h-2l2 4H35l-3-4h-2l2-6z" fill="#e8b84a" stroke="#c49b3d" stroke-width="0.8"/>
+        <path d="M34 6l2-2 2 2M38 4l2-2 2 2M42 6l2-2 2 2" stroke="#e8b84a" stroke-width="1" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <p class="slogan">
+      <span class="line1">We don't need a designer!</span>
+      <span class="line2">I am the designer!</span>
+    </p>
+  </div>
+
+  <div class="main">
+    <div class="card" id="card">
+      <div class="logo">Canton Coin</div>
+      <h1>14-day average price</h1>
+
+      <div class="value-block">
+        <div class="label">Average (USD)</div>
+        <div class="value" id="avg-value">—</div>
+      </div>
+      <div class="value-block">
+        <div class="label">Average (EUR)</div>
+        <div class="value sub" id="avg-eur">—</div>
+      </div>
+      <div class="value-block">
+        <div class="label">Average (GBP)</div>
+        <div class="value sub" id="avg-gbp">—</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="value-block">
+        <div class="label">Latest price</div>
+        <div class="value sub" id="latest-value">—</div>
+      </div>
+      <div class="value-block">
+        <div class="label">Latest (EUR)</div>
+        <div class="value sub" id="latest-eur">—</div>
+      </div>
+      <div class="value-block">
+        <div class="label">Latest (GBP)</div>
+        <div class="value sub" id="latest-gbp">—</div>
+      </div>
+
+      <p class="meta" id="meta">Fetching from CoinGecko…</p>
+      <p class="error-msg" id="error" style="display: none;"></p>
+      <button type="button" class="refresh" id="refresh">Refresh</button>
+    </div>
+
+    <div class="table-wrap" id="table-wrap">
+      <h2>Last 30 days · 14-day averages</h2>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th class="col-date">Date</th>
+            <th class="col-avg">14-day avg (USD)</th>
+            <th class="col-avg">14-day avg (EUR)</th>
+            <th class="col-avg">14-day avg (GBP)</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr><td colspan="4" class="col-date">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="chart-wrap" id="chart-wrap">
+      <h2>30-day price trend</h2>
+      <div id="trend-chart"></div>
+    </div>
+  </div>
+
+  <script>
+    const COIN_ID = 'canton-network';
+    const VS_CURRENCY = 'usd';
+    const DAYS = 14;
+    const TABLE_ROWS = 30;
+    const FETCH_DAYS = 44; // need 44 days to compute 30 rolling 14-day averages
+
+    const card = document.getElementById('card');
+    const tableWrap = document.getElementById('table-wrap');
+    const chartWrap = document.getElementById('chart-wrap');
+    const tableBody = document.getElementById('table-body');
+    const avgEl = document.getElementById('avg-value');
+    const avgEurEl = document.getElementById('avg-eur');
+    const avgGbpEl = document.getElementById('avg-gbp');
+    const latestEl = document.getElementById('latest-value');
+    const latestEurEl = document.getElementById('latest-eur');
+    const latestGbpEl = document.getElementById('latest-gbp');
+    const metaEl = document.getElementById('meta');
+    const errorEl = document.getElementById('error');
+
+    let trendChart = null;
+
+    function setLoading(loading) {
+      card.classList.toggle('loading', loading);
+      tableWrap.classList.toggle('table-loading', loading);
+      errorEl.style.display = 'none';
+    }
+
+    function setError(msg) {
+      card.classList.remove('loading');
+      tableWrap.classList.remove('table-loading');
+      if (trendChart) { trendChart.destroy(); trendChart = null; }
+      errorEl.textContent = msg;
+      errorEl.style.display = 'block';
+      metaEl.textContent = '';
+    }
+
+    function formatPrice(n) {
+      if (n >= 1) return '$' + n.toFixed(4);
+      if (n >= 0.01) return '$' + n.toFixed(6);
+      return '$' + n.toFixed(8);
+    }
+    function formatPriceEur(n) {
+      if (n >= 1) return '€' + n.toFixed(4);
+      if (n >= 0.01) return '€' + n.toFixed(6);
+      return '€' + n.toFixed(8);
+    }
+    function formatPriceGbp(n) {
+      if (n >= 1) return '£' + n.toFixed(4);
+      if (n >= 0.01) return '£' + n.toFixed(6);
+      return '£' + n.toFixed(8);
+    }
+
+    function toDateKey(dateMs) {
+      const d = new Date(dateMs);
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+
+    /** Fetch USD->EUR, GBP rates for date range. Returns Map<dateKey, { EUR, GBP }>; weekends use previous Friday. */
+    async function fetchFxRates(dailyPrices) {
+      if (dailyPrices.length === 0) return new Map();
+      const startKey = toDateKey(dailyPrices[0].dateMs);
+      const endKey = toDateKey(dailyPrices[dailyPrices.length - 1].dateMs);
+      const res = await fetch(`https://api.frankfurter.app/${startKey}..${endKey}?from=USD&to=EUR,GBP`);
+      if (!res.ok) return new Map();
+      const json = await res.json();
+      const rates = json.rates || {};
+      const dateKeysNeeded = [...new Set(dailyPrices.map(d => toDateKey(d.dateMs)))].sort();
+      const map = new Map();
+      let last = { EUR: 0.92, GBP: 0.79 };
+      for (const key of dateKeysNeeded) {
+        if (rates[key]) last = { EUR: rates[key].EUR, GBP: rates[key].GBP };
+        map.set(key, { ...last });
+      }
+      return map;
+    }
+
+    /** Group [timestampMs, price] by UTC day, return array of { dateMs, avgPrice } sorted by date ascending */
+    function groupByDay(prices) {
+      const dayMap = new Map(); // dayKey -> { sum, count }
+      const dayMs = 24 * 60 * 60 * 1000;
+      for (const [ts, p] of prices) {
+        const key = Math.floor(ts / dayMs) * dayMs;
+        if (!dayMap.has(key)) dayMap.set(key, { sum: 0, count: 0 });
+        const d = dayMap.get(key);
+        d.sum += p;
+        d.count += 1;
+      }
+      return Array.from(dayMap.entries())
+        .map(([dateMs, { sum, count }]) => ({ dateMs, avgPrice: sum / count }))
+        .sort((a, b) => a.dateMs - b.dateMs);
+    }
+
+    function renderChart(dailyPrices, fxMap) {
+      const last30 = dailyPrices.slice(-30);
+      if (last30.length === 0 || typeof Highcharts === 'undefined') return;
+      if (trendChart) trendChart.destroy();
+      const hasFx = fxMap && fxMap.size > 0;
+      const series = [{
+        name: 'USD',
+        data: last30.map(d => [d.dateMs, d.avgPrice]),
+        color: '#f472b6',
+        fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(244, 114, 182, 0.4)'], [1, 'rgba(244, 114, 182, 0.05)']] }
+      }];
+      if (hasFx) {
+        series.push({
+          name: 'EUR',
+          data: last30.map(d => {
+            const r = fxMap.get(toDateKey(d.dateMs)) || {};
+            return [d.dateMs, d.avgPrice * (r.EUR || 0)];
+          }),
+          color: '#86efac',
+          fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(134, 239, 172, 0.25)'], [1, 'rgba(134, 239, 172, 0.02)']] }
+        });
+        series.push({
+          name: 'GBP',
+          data: last30.map(d => {
+            const r = fxMap.get(toDateKey(d.dateMs)) || {};
+            return [d.dateMs, d.avgPrice * (r.GBP || 0)];
+          }),
+          color: '#e8b84a',
+          fillColor: { linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 }, stops: [[0, 'rgba(232, 184, 74, 0.25)'], [1, 'rgba(232, 184, 74, 0.02)']] }
+        });
+      }
+      trendChart = Highcharts.chart('trend-chart', {
+        chart: { type: 'area', backgroundColor: 'transparent', style: { fontFamily: 'Outfit, sans-serif' } },
+        title: { text: null },
+        xAxis: {
+          type: 'datetime',
+          labels: { style: { color: '#c99bad' } },
+          lineColor: '#4a2d38',
+          tickColor: '#4a2d38'
+        },
+        yAxis: {
+          title: { text: null },
+          labels: { style: { color: '#c99bad' }, format: '{value:.4f}' },
+          gridLineColor: 'rgba(74, 45, 56, 0.5)'
+        },
+        tooltip: {
+          backgroundColor: 'rgba(45, 24, 34, 0.95)',
+          borderColor: '#4a2d38',
+          style: { color: '#fce8ef' },
+          shared: true,
+          valueDecimals: 4
+        },
+        plotOptions: {
+          area: {
+            fillOpacity: 0.25,
+            lineWidth: 2,
+            marker: { radius: 3 }
+          }
+        },
+        series,
+        credits: { enabled: false }
+      });
+    }
+
+    function renderTable(dailyPrices, fxMap) {
+      const n = dailyPrices.length;
+      if (n < DAYS + TABLE_ROWS - 1) return;
+      const hasFx = fxMap && fxMap.size > 0;
+      const rows = [];
+      for (let k = 0; k < TABLE_ROWS; k++) {
+        const endIdx = n - 1 - k;
+        const startIdx = endIdx - DAYS + 1;
+        if (startIdx < 0) break;
+        let sumUsd = 0, sumEur = 0, sumGbp = 0;
+        for (let i = startIdx; i <= endIdx; i++) {
+          const p = dailyPrices[i].avgPrice;
+          sumUsd += p;
+          if (hasFx) {
+            const key = toDateKey(dailyPrices[i].dateMs);
+            const r = fxMap.get(key) || {};
+            sumEur += p * (r.EUR || 0);
+            sumGbp += p * (r.GBP || 0);
+          }
+        }
+        const avgUsd = sumUsd / DAYS;
+        const avgEur = hasFx ? sumEur / DAYS : null;
+        const avgGbp = hasFx ? sumGbp / DAYS : null;
+        const dateMs = dailyPrices[endIdx].dateMs;
+        const dateStr = new Date(dateMs).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        rows.push({ dateStr, avgUsd, avgEur, avgGbp });
+      }
+      tableBody.innerHTML = rows.map(({ dateStr, avgUsd, avgEur, avgGbp }) =>
+        `<tr><td class="col-date">${dateStr}</td><td class="col-avg">${formatPrice(avgUsd)}</td><td class="col-avg">${avgEur != null ? formatPriceEur(avgEur) : '—'}</td><td class="col-avg">${avgGbp != null ? formatPriceGbp(avgGbp) : '—'}</td></tr>`
+      ).join('');
+    }
+
+    async function fetchAndDisplay() {
+      setLoading(true);
+      avgEl.textContent = '—';
+      avgEurEl.textContent = '—';
+      avgGbpEl.textContent = '—';
+      latestEl.textContent = '—';
+      latestEurEl.textContent = '—';
+      latestGbpEl.textContent = '—';
+      metaEl.textContent = 'Fetching from CoinGecko…';
+      tableBody.innerHTML = '<tr><td colspan="4" class="col-date">Loading…</td></tr>';
+
+      const now = Math.floor(Date.now() / 1000);
+      const from = now - FETCH_DAYS * 24 * 60 * 60;
+      const url = `https://api.coingecko.com/api/v3/coins/${COIN_ID}/market_chart/range?vs_currency=${VS_CURRENCY}&from=${from}&to=${now}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!res.ok || data.prices === undefined) {
+          throw new Error(data.error || data.status?.error_message || 'Could not load price data.');
+        }
+
+        const dailyPrices = groupByDay(data.prices);
+        const latestUsd = data.prices[data.prices.length - 1][1];
+
+        const fxMap = await fetchFxRates(dailyPrices);
+        const hasFx = fxMap && fxMap.size > 0;
+
+        const currentWindow = dailyPrices.slice(-DAYS);
+        const currentAvgUsd = currentWindow.length === DAYS
+          ? currentWindow.reduce((a, d) => a + d.avgPrice, 0) / DAYS
+          : currentWindow.reduce((a, d) => a + d.avgPrice, 0) / currentWindow.length;
+
+        let currentAvgEur = null, currentAvgGbp = null;
+        let latestEur = null, latestGbp = null;
+        if (hasFx && currentWindow.length > 0) {
+          const lastKey = toDateKey(dailyPrices[dailyPrices.length - 1].dateMs);
+          const lastRate = fxMap.get(lastKey) || {};
+          latestEur = latestUsd * (lastRate.EUR || 0);
+          latestGbp = latestUsd * (lastRate.GBP || 0);
+          let sumEur = 0, sumGbp = 0;
+          for (const d of currentWindow) {
+            const r = fxMap.get(toDateKey(d.dateMs)) || {};
+            sumEur += d.avgPrice * (r.EUR || 0);
+            sumGbp += d.avgPrice * (r.GBP || 0);
+          }
+          currentAvgEur = sumEur / currentWindow.length;
+          currentAvgGbp = sumGbp / currentWindow.length;
+        }
+
+        avgEl.textContent = formatPrice(currentAvgUsd);
+        avgEurEl.textContent = currentAvgEur != null ? formatPriceEur(currentAvgEur) : '—';
+        avgGbpEl.textContent = currentAvgGbp != null ? formatPriceGbp(currentAvgGbp) : '—';
+        latestEl.textContent = formatPrice(latestUsd);
+        latestEurEl.textContent = latestEur != null ? formatPriceEur(latestEur) : '—';
+        latestGbpEl.textContent = latestGbp != null ? formatPriceGbp(latestGbp) : '—';
+        metaEl.textContent = hasFx ? `Last ${DAYS} days · FX rate of the day (Frankfurter) · CoinGecko` : `Last ${DAYS} days · via CoinGecko`;
+        renderTable(dailyPrices, fxMap);
+        renderChart(dailyPrices, fxMap);
+        setLoading(false);
+      } catch (err) {
+        setError(err.message || 'Something went wrong. Try again.');
+      }
+    }
+
+    document.getElementById('refresh').addEventListener('click', fetchAndDisplay);
+    fetchAndDisplay();
+  </script>
+</body>
+</html>
