@@ -554,7 +554,7 @@
       if (dailyPrices.length === 0) return new Map();
       const startKey = toDateKey(dailyPrices[0].dateMs);
       const endKey = toDateKey(dailyPrices[dailyPrices.length - 1].dateMs);
-      const res = await fetch(`https://api.frankfurter.app/${startKey}..${endKey}?from=USD&to=EUR,GBP`);
+      const res = await fetch(`/api/rates?start=${startKey}&end=${endKey}`);
       if (!res.ok) return new Map();
       const json = await res.json();
       const rates = json.rates || {};
